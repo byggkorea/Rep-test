@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선호표상체계 검사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F3EA;
+    --card:#FFFDF8;
+    --ink:#2A2823;
+    --ink-soft:#6b665c;
+    --line:#DFD8C6;
+    --v:#C0684F;
+    --a:#3E7C74;
+    --k:#C79A3E;
+    --d:#4B5A78;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:20px 16px 48px;
+  }
+  @media (max-width:480px){
+    body{padding:14px 12px 32px;}
+  }
+  .wrap{
+    width:100%;
+    max-width:640px;
+  }
+  .masthead{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .masthead .kicker{
+    font-size:13px;
+    color:var(--ink-soft);
+    letter-spacing:0.02em;
+    margin-bottom:6px;
+  }
+  .masthead h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.01em;
+    margin:0;
+    line-height:1.35;
+    color:var(--ink-soft);
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:36px 32px;
+  }
+  @media (max-width:480px){
+    .card{padding:18px 16px;}
+    .masthead{margin-bottom:16px;}
+    .result-head{margin-bottom:10px;}
+    .chart-wrap{margin:2px 0 12px;}
+    .type-summary{margin-bottom:14px;gap:8px;}
+    .type-cell{padding:10px 4px;}
+    .type-cell .tc-score{font-size:19px;}
+    .dominant-box{padding:12px 14px;margin-bottom:16px;}
+    .dominant-box .dom-title{font-size:15px;margin-bottom:6px;}
+  }
+
+  /* ---- intro ---- */
+  .field{
+    margin-bottom:18px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    font-size:16px;
+    font-family:inherit;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--d);
+  }
+  .intro-desc{
+    font-size:14.5px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    margin-bottom:26px;
+  }
+  .btn{
+    width:100%;
+    padding:14px;
+    font-size:16px;
+    font-family:'Noto Sans KR', sans-serif;
+    font-weight:500;
+    border:none;
+    border-radius:3px;
+    background:var(--ink);
+    color:var(--bg);
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .btn:hover{opacity:.85;}
+  .btn:disabled{
+    background:var(--line);
+    color:var(--ink-soft);
+    cursor:not-allowed;
+  }
+  .btn-ghost{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  .error-msg{
+    font-size:13px;
+    color:var(--v);
+    margin-top:-10px;
+    margin-bottom:16px;
+    display:none;
+  }
+
+  /* ---- test ---- */
+  .progress-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-row .qnum{
+    font-family:'Noto Serif KR', serif;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+  .progress-track{
+    height:2px;
+    background:var(--line);
+    margin-bottom:28px;
+    position:relative;
+  }
+  .progress-fill{
+    height:2px;
+    background:var(--ink);
+    transition:width .3s ease;
+  }
+  .qtext{
+    font-family:'Noto Serif KR', serif;
+    font-size:19px;
+    line-height:1.5;
+    margin:0 0 6px;
+  }
+  .qhint{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 22px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .opt{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    cursor:pointer;
+    font-size:15px;
+    line-height:1.5;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:var(--ink-soft);}
+  .opt.ranked{
+    border-color:var(--ink);
+    background:#FBF8F1;
+  }
+  .opt .badge{
+    flex:none;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+  }
+  .opt.ranked .badge{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--bg);
+  }
+  .qactions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .qactions .reset-link{
+    font-size:13px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .qactions .next-btn{
+    width:auto;
+    padding:10px 24px;
+  }
+
+  /* ---- results ---- */
+  .result-head{
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .result-head .rname{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .result-head h2{
+    font-family:'Noto Serif KR', serif;
+    font-size:22px;
+    margin:0;
+  }
+  .chart-wrap{
+    margin:8px 0 30px;
+  }
+  .type-summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .type-cell{
+    text-align:center;
+    padding:14px 6px;
+    border-radius:3px;
+    border:1px solid var(--line);
+  }
+  .type-cell .tc-label{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .type-cell .tc-score{
+    font-family:'Noto Serif KR', serif;
+    font-size:22px;
+    font-weight:700;
+  }
+  .dominant-box{
+    border-left:3px solid var(--ink);
+    padding:16px 18px;
+    background:#FBF8F1;
+    margin-bottom:22px;
+  }
+  .dominant-box .dom-title{
+    font-family:'Noto Serif KR', serif;
+    font-size:17px;
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  .dominant-box p{
+    font-size:14px;
+    line-height:1.7;
+    margin:0;
+    color:#3a372f;
+  }
+  .legend{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:22px;
+  }
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="kicker">설기문 박사 · 선호표상체계 검사</div>
+    <h1>Favoured Representational System</h1>
+  </div>
+
+  <div class="card">
+
+    <!-- INTRO -->
+    <div id="stage-intro">
+      <p class="intro-desc">
+        같은 상황이라도 사람마다 시각(V), 청각(A), 신체감각(K), 내부언어(AD) 중
+        어느 표상체계를 더 편하게 쓰는지가 다릅니다. 10개의 문항에 답하면
+        네 가지 성향의 점수를 계산해 드립니다.
+      </p>
+      <div class="field">
+        <label for="in-name">이름</label>
+        <input id="in-name" type="text" placeholder="이름을 입력하세요" autocomplete="name">
+      </div>
+      <div class="error-msg" id="intro-error">이름을 입력해 주세요.</div>
+      <button class="btn" id="start-btn">검사 시작하기</button>
+    </div>
+
+    <!-- TEST -->
+    <div id="stage-test" class="hidden">
+      <div class="progress-row">
+        <span class="qnum" id="qnum-label">문항 1 / 10</span>
+        <span class="qnum" id="qcount-label"></span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <p class="qtext" id="qtext"></p>
+      <p class="qhint">가장 나에게 해당하는 것부터 순서대로 눌러주세요 (4점&nbsp;→&nbsp;3점&nbsp;→&nbsp;2점&nbsp;→&nbsp;1점)</p>
+      <div class="options" id="options"></div>
+      <div class="qactions">
+        <span class="reset-link" id="reset-link">다시 선택</span>
+        <button class="btn next-btn" id="next-btn" disabled>다음</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="stage-result" class="hidden">
+      <div class="result-head">
+        <div class="rname" id="result-name"></div>
+        <h2>검사 결과</h2>
+      </div>
+
+      <div class="chart-wrap">
+        <svg id="chart-svg" width="100%" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="type-summary" id="type-summary"></div>
+
+      <div id="dominant-container"></div>
+
+      <button class="btn btn-ghost" id="restart-btn">다시 검사하기</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CATS = {
+  V:{name:'시각형', full:'Visual · 시각', color:'var(--v)', hex:'#C0684F',
+     desc:'눈을 위쪽으로 두는 경향이 있고 호흡이 얕고 빠른 편입니다. 정리정돈을 잘하고 이미지나 장면으로 기억하며, 소리보다 눈에 보이는 것에 더 민감합니다. 외모나 전체적인 조화, 색감에 신경을 많이 씁니다.'},
+  A:{name:'청각형', full:'Auditory · 청각', color:'var(--a)', hex:'#3E7C74',
+     desc:'눈을 옆으로 움직이는 경향이 있고 중간 정도 깊이로 호흡합니다. 혼잣말을 자주 하며 소음에 민감하게 반응합니다. 한번 들은 것을 잘 기억하고, 목소리의 톤이나 음색 같은 청각적 단서에 민감합니다.'},
+  K:{name:'신체감각형', full:'Kinesthetic · 신체감각', color:'var(--k)', hex:'#C79A3E',
+     desc:'배로 깊게 호흡하는 경향이 있고 말이 느리며 중간에 잠시 멈추기도 합니다. 스킨십과 가까운 거리에서의 대화를 편하게 느끼고, 직접 행동해 보면서 기억합니다. 감정과 느낌에 예민한 편입니다.'},
+  D:{name:'내부언어형', full:'Auditory Digital · 내부언어', color:'var(--d)', hex:'#4B5A78',
+     desc:'혼잣말(독백)을 하는 습관이 있고 사리와 논리를 따지는 경향이 있습니다. 절차와 순서, 이치를 중요하게 여기며 정확한 단어와 표현을 사용하려 합니다.'},
+};
+
+const QUESTIONS = [
+ {text:"내가 중요한 결정을 할 때 나에게 가장 영향을 미치는 것은 다음과 같은 것이다.",
+  opts:[["직관적인 느낌","K"],["다른 사람들이 하는 말","A"],["전체적인 일의 모습과 조화","V"],["면밀한 검토와 연구","D"]]},
+ {text:"다른 사람과 논쟁을 할 때 내가 가장 민감하게 반응하는 부분은 다음과 같다.",
+  opts:[["상대방의 목소리 톤","A"],["상대방이 논쟁하는 모습","V"],["상대방의 논쟁 내용","D"],["상대방의 진실된 감정","K"]]},
+ {text:"나는 평소와 다른 심리 상태가 될 때 다음과 같은 것이 바뀌는 경향이 있다.",
+  opts:[["옷차림새나 화장","V"],["감정의 표현","K"],["언어나 용어","D"],["목소리 상태","A"]]},
+ {text:"나는 다음과 같은 것을 하기가 가장 쉽다.",
+  opts:[["음질 좋은 오디오를 켜놓고 음악을 듣기","A"],["관심 있는 주제에 대하여 논리적으로 생각하기","D"],["가장 안락하게 느껴지는 가구를 고르기","K"],["색상이 잘 어울리는 디자인을 고르기","V"]]},
+ {text:"나를 가장 잘 나타내는 것은 다음과 같다.",
+  opts:[["주변의 소음에 민감하다","A"],["어떤 사실, 자료를 분석할 때 논리성을 따진다","D"],["옷의 촉감에 매우 민감한 편이다","K"],["실내의 가구배치나 색상에 민감한 편이다","V"]]},
+ {text:"사람들이 나를 가장 잘 알려면 다음과 같이 하는 것이 좋다.",
+  opts:[["내가 느끼는 것을 경험하기","K"],["나의 관점과 함께 하면서 보기","V"],["내가 무슨 말을 하며 또 표현을 어떻게 하는지 주의 깊게 들어보기","A"],["내가 하고자 하거나 말하는 것의 의미에 관심 가지기","D"]]},
+ {text:"나는 다음을 하는 것을 좋아한다.",
+  opts:[["다른 사람들이 말하는 것을 듣기","A"],["계획 세울 때 전체적인 모습을 먼저 그려보기","V"],["정보나 자료가 있을 때 논리적 체계를 세우고 정리하기","D"],["사람을 처음 만날 때 그에 대한 느낌 중시하기","K"]]},
+ {text:"나로 말할 것 같으면,",
+  opts:[["나의 눈으로 보고 확인하기 전에는 잘 믿지 않는 경향이 있다","V"],["상대방이 애절한 목소리로 부탁을 해오면 거절하지 못한다","A"],["나의 느낌으로 옳다고 여겨지면 이유를 따지지 않고 믿고 받아들인다","K"],["이치에 맞고 합리적이면 나는 받아들인다","D"]]},
+ {text:"나는 스트레스를 받으면,",
+  opts:[["음악을 듣는다","A"],["책을 읽고 사색을 한다","D"],["편안하게 누워서 휴식을 취한다","K"],["좋은 경치가 나오는 영화나 그림을 본다","V"]]},
+ {text:"나는 처음 본 사람이라도 다음과 같은 식으로 그를 기억해 낼 수 있다.",
+  opts:[["얼굴 모습이나 옷차림새","V"],["목소리","A"],["그에 대한 느낌","K"],["그의 직업이나 하는 일이 무엇일까 생각해보고 기억한다","D"]]},
+];
+
+let currentQ = 0;
+let ranks = [];          // ranks[q] = [{idx, order}] order 1..4 in click sequence
+let scores = {V:0,A:0,K:0,D:0};
+let userName = '';
+
+const stageIntro = document.getElementById('stage-intro');
+const stageTest = document.getElementById('stage-test');
+const stageResult = document.getElementById('stage-result');
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  userName = document.getElementById('in-name').value.trim();
+  const err = document.getElementById('intro-error');
+  if(!userName){
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  stageIntro.classList.add('hidden');
+  stageTest.classList.remove('hidden');
+  renderQuestion();
+});
+
+document.getElementById('reset-link').addEventListener('click', () => {
+  ranks[currentQ] = [];
+  renderQuestion();
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if(currentQ < QUESTIONS.length - 1){
+    currentQ++;
+    renderQuestion();
+  } else {
+    computeScores();
+    showResults();
+  }
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  currentQ = 0;
+  ranks = [];
+  scores = {V:0,A:0,K:0,D:0};
+  stageResult.classList.add('hidden');
+  stageIntro.classList.remove('hidden');
+  document.getElementById('in-name').value = '';
+});
+
+function renderQuestion(){
+  const q = QUESTIONS[currentQ];
+  if(!ranks[currentQ]) ranks[currentQ] = [];
+
+  document.getElementById('qnum-label').textContent = `문항 ${currentQ+1} / ${QUESTIONS.length}`;
+  document.getElementById('qcount-label').textContent = `${ranks[currentQ].length}/4 선택됨`;
+  document.getElementById('progress-fill').style.width = `${(currentQ/QUESTIONS.length)*100}%`;
+  document.getElementById('qtext').textContent = `${currentQ+1}) ${q.text}`;
+
+  const optsWrap = document.getElementById('options');
+  optsWrap.innerHTML = '';
+  q.opts.forEach((opt, idx) => {
+    const rankEntry = ranks[currentQ].find(r => r.idx === idx);
+    const div = document.createElement('div');
+    div.className = 'opt' + (rankEntry ? ' ranked' : '');
+    const points = rankEntry ? 5 - rankEntry.order : '';
+    div.innerHTML = `<span class="badge">${points}</span><span>${opt[0]}</span>`;
+    div.addEventListener('click', () => selectOption(idx));
+    optsWrap.appendChild(div);
+  });
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = ranks[currentQ].length < 4;
+  nextBtn.textContent = currentQ === QUESTIONS.length - 1 ? '결과 보기' : '다음';
+}
+
+function selectOption(idx){
+  const current = ranks[currentQ];
+  if(current.find(r => r.idx === idx)) return; // already ranked
+  if(current.length >= 4) return;
+  current.push({idx, order: current.length + 1});
+  renderQuestion();
+}
+
+function computeScores(){
+  scores = {V:0,A:0,K:0,D:0};
+  QUESTIONS.forEach((q, qi) => {
+    ranks[qi].forEach(r => {
+      const cat = q.opts[r.idx][1];
+      const pts = 5 - r.order; // 1st click(order1)=4pts ... 4th click(order4)=1pt
+      scores[cat] += pts;
+    });
+  });
+}
+
+function showResults(){
+  stageTest.classList.add('hidden');
+  stageResult.classList.remove('hidden');
+
+  document.getElementById('result-name').textContent = userName;
+
+  // type summary cells
+  const order = ['V','A','K','D'];
+  const summaryWrap = document.getElementById('type-summary');
+  summaryWrap.innerHTML = '';
+  order.forEach(k => {
+    const cell = document.createElement('div');
+    cell.className = 'type-cell';
+    cell.style.borderTopColor = CATS[k].hex;
+    cell.style.borderTopWidth = '3px';
+    cell.innerHTML = `<div class="tc-label">${CATS[k].name}</div><div class="tc-score" style="color:${CATS[k].hex}">${scores[k]}</div>`;
+    summaryWrap.appendChild(cell);
+  });
+
+  drawChart(order);
+
+  // dominant type(s)
+  const maxScore = Math.max(...order.map(k => scores[k]));
+  const dominant = order.filter(k => scores[k] === maxScore);
+  const domWrap = document.getElementById('dominant-container');
+  domWrap.innerHTML = '';
+  dominant.forEach(k => {
+    const box = document.createElement('div');
+    box.className = 'dominant-box';
+    box.style.borderLeftColor = CATS[k].hex;
+    box.innerHTML = `<p class="dom-title" style="color:${CATS[k].hex}">가장 선호하는 표상체계 : ${CATS[k].name} (${CATS[k].full}) — ${scores[k]}점</p><p>${CATS[k].desc}</p>`;
+    domWrap.appendChild(box);
+  });
+}
+
+function drawChart(order){
+  const svg = document.getElementById('chart-svg');
+  const W = 560, H = 240;
+  const padL = 40, padR = 20, padT = 18, padB = 36;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = 40;
+  const barGap = 30;
+  const barW = (chartW - barGap * (order.length - 1)) / order.length;
+
+  let svgContent = '';
+
+  // grid lines every 5 up to 40
+  for(let v = 0; v <= maxVal; v += 5){
+    const y = padT + chartH - (v / maxVal) * chartH;
+    svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#DFD8C6" stroke-width="1"/>`;
+    svgContent += `<text x="${padL-10}" y="${y+4}" font-size="11" fill="#6b665c" text-anchor="end" font-family="Noto Sans KR, sans-serif">${v}</text>`;
+  }
+
+  order.forEach((k, i) => {
+    const val = scores[k];
+    const barH = (val / maxVal) * chartH;
+    const x = padL + i * (barW + barGap);
+    const y = padT + chartH - barH;
+    svgContent += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${CATS[k].hex}" rx="2"/>`;
+    svgContent += `<text x="${x + barW/2}" y="${y - 8}" font-size="13" font-weight="700" fill="${CATS[k].hex}" text-anchor="middle" font-family="Noto Serif KR, serif">${val}</text>`;
+    svgContent += `<text x="${x + barW/2}" y="${padT+chartH+22}" font-size="13" fill="#2A2823" text-anchor="middle" font-family="Noto Sans KR, sans-serif">${k}</text>`;
+  });
+
+  svg.innerHTML = svgContent;
+}
+</script>
+</body>
+</html>
