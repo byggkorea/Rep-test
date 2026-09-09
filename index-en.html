@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Representational System Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F3EA;
+    --card:#FFFDF8;
+    --ink:#2A2823;
+    --ink-soft:#6b665c;
+    --line:#DFD8C6;
+    --v:#C0684F;
+    --a:#3E7C74;
+    --k:#C79A3E;
+    --d:#4B5A78;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:20px 16px 48px;
+  }
+  @media (max-width:480px){
+    body{padding:14px 12px 32px;}
+  }
+  .wrap{
+    width:100%;
+    max-width:640px;
+  }
+  .masthead{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .masthead .kicker{
+    font-size:13px;
+    color:var(--ink-soft);
+    letter-spacing:0.02em;
+    margin-bottom:6px;
+  }
+  .masthead h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.01em;
+    margin:0;
+    line-height:1.35;
+    color:var(--ink-soft);
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:36px 32px;
+  }
+  @media (max-width:480px){
+    .card{padding:18px 16px;}
+    .masthead{margin-bottom:16px;}
+    .result-head{margin-bottom:10px;}
+    .chart-wrap{margin:2px 0 12px;}
+    .type-summary{margin-bottom:14px;gap:8px;}
+    .type-cell{padding:10px 4px;}
+    .type-cell .tc-score{font-size:19px;}
+    .dominant-box{padding:12px 14px;margin-bottom:16px;}
+    .dominant-box .dom-title{font-size:15px;margin-bottom:6px;}
+  }
+
+  /* ---- intro ---- */
+  .field{
+    margin-bottom:18px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    font-size:16px;
+    font-family:inherit;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--d);
+  }
+  .intro-desc{
+    font-size:14.5px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    margin-bottom:26px;
+  }
+  .btn{
+    width:100%;
+    padding:14px;
+    font-size:16px;
+    font-family:'Noto Sans KR', sans-serif;
+    font-weight:500;
+    border:none;
+    border-radius:3px;
+    background:var(--ink);
+    color:var(--bg);
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .btn:hover{opacity:.85;}
+  .btn:disabled{
+    background:var(--line);
+    color:var(--ink-soft);
+    cursor:not-allowed;
+  }
+  .btn-ghost{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  .error-msg{
+    font-size:13px;
+    color:var(--v);
+    margin-top:-10px;
+    margin-bottom:16px;
+    display:none;
+  }
+
+  /* ---- test ---- */
+  .progress-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-row .qnum{
+    font-family:'Noto Serif KR', serif;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+  .progress-track{
+    height:2px;
+    background:var(--line);
+    margin-bottom:28px;
+    position:relative;
+  }
+  .progress-fill{
+    height:2px;
+    background:var(--ink);
+    transition:width .3s ease;
+  }
+  .qtext{
+    font-family:'Noto Serif KR', serif;
+    font-size:19px;
+    line-height:1.5;
+    margin:0 0 6px;
+  }
+  .qhint{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 22px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .opt{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    cursor:pointer;
+    font-size:15px;
+    line-height:1.5;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:var(--ink-soft);}
+  .opt.ranked{
+    border-color:var(--ink);
+    background:#FBF8F1;
+  }
+  .opt .badge{
+    flex:none;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+  }
+  .opt.ranked .badge{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--bg);
+  }
+  .qactions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .qactions .reset-link{
+    font-size:13px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .qactions .next-btn{
+    width:auto;
+    padding:10px 24px;
+  }
+
+  /* ---- results ---- */
+  .result-head{
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .result-head .rname{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .result-head h2{
+    font-family:'Noto Serif KR', serif;
+    font-size:22px;
+    margin:0;
+  }
+  .chart-wrap{
+    margin:8px 0 30px;
+  }
+  .type-summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .type-cell{
+    text-align:center;
+    padding:14px 6px;
+    border-radius:3px;
+    border:1px solid var(--line);
+  }
+  .type-cell .tc-label{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .type-cell .tc-score{
+    font-family:'Noto Serif KR', serif;
+    font-size:22px;
+    font-weight:700;
+  }
+  .dominant-box{
+    border-left:3px solid var(--ink);
+    padding:16px 18px;
+    background:#FBF8F1;
+    margin-bottom:22px;
+  }
+  .dominant-box .dom-title{
+    font-family:'Noto Serif KR', serif;
+    font-size:17px;
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  .dominant-box p{
+    font-size:14px;
+    line-height:1.7;
+    margin:0;
+    color:#3a372f;
+  }
+  .legend{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:22px;
+  }
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="kicker">Dr. Sul Gi-mun · Representational System Test</div>
+    <h1>Favoured Representational System</h1>
+  </div>
+
+  <div class="card">
+
+    <!-- INTRO -->
+    <div id="stage-intro">
+      <p class="intro-desc">
+        Even in the same situation, people tend to rely more on one representational
+        system than another — Visual (V), Auditory (A), Kinesthetic (K), or
+        Auditory Digital (AD). Answer 10 questions and we'll calculate your
+        score across all four.
+      </p>
+      <div class="field">
+        <label for="in-name">Name</label>
+        <input id="in-name" type="text" placeholder="Enter your name" autocomplete="name">
+      </div>
+      <div class="error-msg" id="intro-error">Please enter your name.</div>
+      <button class="btn" id="start-btn">Start Test</button>
+    </div>
+
+    <!-- TEST -->
+    <div id="stage-test" class="hidden">
+      <div class="progress-row">
+        <span class="qnum" id="qnum-label">Question 1 / 10</span>
+        <span class="qnum" id="qcount-label"></span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <p class="qtext" id="qtext"></p>
+      <p class="qhint">Tap the option that fits you best first, then the next (4&nbsp;pts&nbsp;→&nbsp;3&nbsp;pts&nbsp;→&nbsp;2&nbsp;pts&nbsp;→&nbsp;1&nbsp;pt)</p>
+      <div class="options" id="options"></div>
+      <div class="qactions">
+        <span class="reset-link" id="reset-link">Reset</span>
+        <button class="btn next-btn" id="next-btn" disabled>Next</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="stage-result" class="hidden">
+      <div class="result-head">
+        <div class="rname" id="result-name"></div>
+        <h2>Your Results</h2>
+      </div>
+
+      <div class="chart-wrap">
+        <svg id="chart-svg" width="100%" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="type-summary" id="type-summary"></div>
+
+      <div id="dominant-container"></div>
+
+      <button class="btn btn-ghost" id="restart-btn">Retake Test</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CATS = {
+  V:{name:'Visual', full:'Visual (V)', color:'var(--v)', hex:'#C0684F',
+     desc:"Tends to hold the eyes upward with shallow, quick breathing. Naturally organized and tidy, and remembers things as images or scenes rather than sounds. Pays close attention to appearance, overall harmony, and color."},
+  A:{name:'Auditory', full:'Auditory (A)', color:'var(--a)', hex:'#3E7C74',
+     desc:"Tends to move the eyes side to side with mid-depth breathing. Often talks to themselves and is sensitive to background noise. Remembers what they've heard well, and is attuned to auditory cues like tone of voice and timbre."},
+  K:{name:'Kinesthetic', full:'Kinesthetic (K)', color:'var(--k)', hex:'#C79A3E',
+     desc:"Tends to breathe deeply from the belly, speaking slowly with occasional pauses. Comfortable with physical touch and close conversational distance, and remembers best by doing. Highly attuned to emotions and feelings."},
+  D:{name:'Auditory Digital', full:'Auditory Digital (AD)', color:'var(--d)', hex:'#4B5A78',
+     desc:"Has a habit of internal self-talk and tends to weigh things through logic and reasoning. Values procedure, sequence, and rationale, and prefers precise, accurate wording."},
+};
+
+const QUESTIONS = [
+ {text:"When I make an important decision, the thing that influences me most is:",
+  opts:[["An intuitive gut feeling","K"],["What other people say","A"],["The overall picture and how well it fits together","V"],["Careful examination and research","D"]]},
+ {text:"When I'm arguing with someone, what I react to most sensitively is:",
+  opts:[["The tone of the other person's voice","A"],["The way the other person argues (their manner/appearance)","V"],["The content of the other person's argument","D"],["The other person's genuine feelings","K"]]},
+ {text:"When I'm in a different psychological state than usual, the thing that tends to change is my:",
+  opts:[["Clothing or makeup","V"],["Expression of emotion","K"],["Word choice or vocabulary","D"],["Tone of voice","A"]]},
+ {text:"The following is easiest for me to do:",
+  opts:[["Playing music on good-quality audio equipment and listening","A"],["Thinking logically about a topic I'm interested in","D"],["Picking out the most comfortable-feeling furniture","K"],["Picking a design where the colors go well together","V"]]},
+ {text:"The following best describes me:",
+  opts:[["I'm sensitive to noise around me","A"],["When analyzing facts or data, I focus on logical consistency","D"],["I'm very sensitive to the texture/feel of clothing","K"],["I'm sensitive to indoor furniture arrangement and color","V"]]},
+ {text:"For people to really get to know me, it helps if they:",
+  opts:[["Experience what I feel","K"],["See things along with my perspective","V"],["Listen carefully to what I say and how I express it","A"],["Pay attention to the meaning of what I'm trying to say","D"]]},
+ {text:"I like to:",
+  opts:[["Listen to what other people say","A"],["Picture the overall shape of a plan first when planning","V"],["Build and organize a logical structure when I have information or data","D"],["Focus on my feeling about someone when I first meet them","K"]]},
+ {text:"As for me,",
+  opts:[["I tend not to believe something until I've seen it with my own eyes","V"],["I can't say no if someone makes a request in a pleading tone of voice","A"],["If something feels right to me, I accept it without questioning the reasons","K"],["I accept things that are logical and make sense","D"]]},
+ {text:"When I'm stressed, I:",
+  opts:[["Listen to music","A"],["Read a book and reflect","D"],["Lie down comfortably and rest","K"],["Watch a movie or look at art with beautiful scenery","V"]]},
+ {text:"Even for someone I've just met, I can remember them by:",
+  opts:[["Their face or the way they were dressed","V"],["Their voice","A"],["My feeling about them","K"],["Thinking about and remembering what their job or occupation might be","D"]]},
+];
+
+let currentQ = 0;
+let ranks = [];          // ranks[q] = [{idx, order}] order 1..4 in click sequence
+let scores = {V:0,A:0,K:0,D:0};
+let userName = '';
+
+const stageIntro = document.getElementById('stage-intro');
+const stageTest = document.getElementById('stage-test');
+const stageResult = document.getElementById('stage-result');
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  userName = document.getElementById('in-name').value.trim();
+  const err = document.getElementById('intro-error');
+  if(!userName){
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  stageIntro.classList.add('hidden');
+  stageTest.classList.remove('hidden');
+  renderQuestion();
+});
+
+document.getElementById('reset-link').addEventListener('click', () => {
+  ranks[currentQ] = [];
+  renderQuestion();
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if(currentQ < QUESTIONS.length - 1){
+    currentQ++;
+    renderQuestion();
+  } else {
+    computeScores();
+    showResults();
+  }
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  currentQ = 0;
+  ranks = [];
+  scores = {V:0,A:0,K:0,D:0};
+  stageResult.classList.add('hidden');
+  stageIntro.classList.remove('hidden');
+  document.getElementById('in-name').value = '';
+});
+
+function renderQuestion(){
+  const q = QUESTIONS[currentQ];
+  if(!ranks[currentQ]) ranks[currentQ] = [];
+
+  document.getElementById('qnum-label').textContent = `Question ${currentQ+1} / ${QUESTIONS.length}`;
+  document.getElementById('qcount-label').textContent = `${ranks[currentQ].length}/4 selected`;
+  document.getElementById('progress-fill').style.width = `${(currentQ/QUESTIONS.length)*100}%`;
+  document.getElementById('qtext').textContent = `${currentQ+1}) ${q.text}`;
+
+  const optsWrap = document.getElementById('options');
+  optsWrap.innerHTML = '';
+  q.opts.forEach((opt, idx) => {
+    const rankEntry = ranks[currentQ].find(r => r.idx === idx);
+    const div = document.createElement('div');
+    div.className = 'opt' + (rankEntry ? ' ranked' : '');
+    const points = rankEntry ? 5 - rankEntry.order : '';
+    div.innerHTML = `<span class="badge">${points}</span><span>${opt[0]}</span>`;
+    div.addEventListener('click', () => selectOption(idx));
+    optsWrap.appendChild(div);
+  });
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = ranks[currentQ].length < 4;
+  nextBtn.textContent = currentQ === QUESTIONS.length - 1 ? 'See Results' : 'Next';
+}
+
+function selectOption(idx){
+  const current = ranks[currentQ];
+  if(current.find(r => r.idx === idx)) return; // already ranked
+  if(current.length >= 4) return;
+  current.push({idx, order: current.length + 1});
+  renderQuestion();
+}
+
+function computeScores(){
+  scores = {V:0,A:0,K:0,D:0};
+  QUESTIONS.forEach((q, qi) => {
+    ranks[qi].forEach(r => {
+      const cat = q.opts[r.idx][1];
+      const pts = 5 - r.order; // 1st click(order1)=4pts ... 4th click(order4)=1pt
+      scores[cat] += pts;
+    });
+  });
+}
+
+function showResults(){
+  stageTest.classList.add('hidden');
+  stageResult.classList.remove('hidden');
+
+  document.getElementById('result-name').textContent = userName;
+
+  // type summary cells
+  const order = ['V','A','K','D'];
+  const summaryWrap = document.getElementById('type-summary');
+  summaryWrap.innerHTML = '';
+  order.forEach(k => {
+    const cell = document.createElement('div');
+    cell.className = 'type-cell';
+    cell.style.borderTopColor = CATS[k].hex;
+    cell.style.borderTopWidth = '3px';
+    cell.innerHTML = `<div class="tc-label">${CATS[k].name}</div><div class="tc-score" style="color:${CATS[k].hex}">${scores[k]}</div>`;
+    summaryWrap.appendChild(cell);
+  });
+
+  drawChart(order);
+
+  // dominant type(s)
+  const maxScore = Math.max(...order.map(k => scores[k]));
+  const dominant = order.filter(k => scores[k] === maxScore);
+  const domWrap = document.getElementById('dominant-container');
+  domWrap.innerHTML = '';
+  dominant.forEach(k => {
+    const box = document.createElement('div');
+    box.className = 'dominant-box';
+    box.style.borderLeftColor = CATS[k].hex;
+    box.innerHTML = `<p class="dom-title" style="color:${CATS[k].hex}">Dominant Representational System: ${CATS[k].name} (${CATS[k].full}) — ${scores[k]} points</p><p>${CATS[k].desc}</p>`;
+    domWrap.appendChild(box);
+  });
+}
+
+function drawChart(order){
+  const svg = document.getElementById('chart-svg');
+  const W = 560, H = 240;
+  const padL = 40, padR = 20, padT = 18, padB = 36;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = 40;
+  const barGap = 30;
+  const barW = (chartW - barGap * (order.length - 1)) / order.length;
+
+  let svgContent = '';
+
+  // grid lines every 5 up to 40
+  for(let v = 0; v <= maxVal; v += 5){
+    const y = padT + chartH - (v / maxVal) * chartH;
+    svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#DFD8C6" stroke-width="1"/>`;
+    svgContent += `<text x="${padL-10}" y="${y+4}" font-size="11" fill="#6b665c" text-anchor="end" font-family="Noto Sans KR, sans-serif">${v}</text>`;
+  }
+
+  order.forEach((k, i) => {
+    const val = scores[k];
+    const barH = (val / maxVal) * chartH;
+    const x = padL + i * (barW + barGap);
+    const y = padT + chartH - barH;
+    svgContent += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${CATS[k].hex}" rx="2"/>`;
+    svgContent += `<text x="${x + barW/2}" y="${y - 8}" font-size="13" font-weight="700" fill="${CATS[k].hex}" text-anchor="middle" font-family="Noto Serif KR, serif">${val}</text>`;
+    svgContent += `<text x="${x + barW/2}" y="${padT+chartH+22}" font-size="13" fill="#2A2823" text-anchor="middle" font-family="Noto Sans KR, sans-serif">${k}</text>`;
+  });
+
+  svg.innerHTML = svgContent;
+}
+</script>
+</body>
+</html>
