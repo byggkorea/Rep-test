@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하위양식 신념 변화 기법</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F3EA;
+    --card:#FFFDF8;
+    --ink:#2A2823;
+    --ink-soft:#6b665c;
+    --line:#DFD8C6;
+    --v:#C0684F;
+    --a:#3E7C74;
+    --k:#C79A3E;
+    --d:#4B5A78;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:20px 16px 48px;
+  }
+  @media (max-width:480px){
+    body{padding:14px 12px 32px;}
+  }
+  .wrap{width:100%; max-width:640px;}
+  .masthead{text-align:center; margin-bottom:20px;}
+  .masthead .kicker{font-size:13px; color:var(--ink-soft); margin-bottom:6px;}
+  .masthead h1{font-family:'Noto Serif KR', serif; font-weight:700; font-size:20px; margin:0; line-height:1.4;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:28px 26px;}
+  @media (max-width:480px){ .card{padding:18px 16px;} }
+
+  .progress-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .progress-row span{font-size:13px; color:var(--ink-soft);}
+  .progress-track{height:2px; background:var(--line); margin-bottom:22px;}
+  .progress-fill{height:2px; background:var(--ink); transition:width .3s ease;}
+
+  h2.step-title{font-family:'Noto Serif KR', serif; font-size:18px; line-height:1.5; margin:0 0 14px;}
+  p.prompt{font-size:15px; line-height:1.7; margin:0 0 10px;}
+  p.note{font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 18px; font-style:italic;}
+  p.instruction{font-size:14.5px; line-height:1.75; margin:0 0 20px; background:#FBF8F1; border-left:3px solid var(--ink); padding:12px 14px;}
+
+  textarea, input[type="text"]{
+    width:100%; padding:12px 14px; font-size:15px; font-family:inherit;
+    border:1px solid var(--line); border-radius:3px; background:#fff; color:var(--ink);
+    resize:vertical; min-height:52px; margin-bottom:18px;
+  }
+  textarea:focus, input:focus{outline:none; border-color:var(--d);}
+
+  .btn{
+    width:100%; padding:14px; font-size:16px; font-family:'Noto Sans KR', sans-serif; font-weight:500;
+    border:none; border-radius:3px; background:var(--ink); color:var(--bg); cursor:pointer;
+  }
+  .btn:hover{opacity:.85;}
+  .btn:disabled{background:var(--line); color:var(--ink-soft); cursor:not-allowed;}
+  .btn-ghost{background:none; border:1px solid var(--line); color:var(--ink);}
+  .btn-row{display:flex; gap:10px; margin-top:8px;}
+  .btn-row .btn{flex:1;}
+
+  details.group{border:1px solid var(--line); border-radius:3px; margin-bottom:10px; background:#fff;}
+  details.group summary{
+    padding:12px 14px; cursor:pointer; font-weight:500; font-size:14.5px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  details.group[open] summary{border-bottom:1px solid var(--line);}
+  .group-body{padding:6px 14px 12px;}
+  .slider-row{padding:10px 0; border-bottom:1px solid #F0EBDD;}
+  .slider-row:last-child{border-bottom:none;}
+  .slider-row .slabel{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px;}
+  .slider-row .sval{font-weight:700; font-family:'Noto Serif KR', serif;}
+  input[type="range"]{width:100%; accent-color:var(--ink); margin:0;}
+
+  .checklist-toggle{font-size:13px; color:var(--ink-soft); margin:2px 0 18px;}
+
+  .compare-row{margin-bottom:14px;}
+  .compare-row .clabel{font-size:13.5px; margin-bottom:5px;}
+  .cbar-wrap{display:flex; align-items:center; gap:8px; margin-bottom:3px;}
+  .cbar-tag{width:14px; font-size:11px; color:var(--ink-soft); flex:none;}
+  .cbar-track{flex:1; height:8px; background:#F0EBDD; border-radius:4px; overflow:hidden;}
+  .cbar-fill{height:100%; border-radius:4px;}
+  .cbar-num{width:20px; text-align:right; font-size:12px; color:var(--ink-soft); flex:none;}
+
+  .summary-box{border-left:3px solid var(--ink); background:#FBF8F1; padding:14px 16px; margin-bottom:14px;}
+  .summary-box .slabel2{font-size:12px; color:var(--ink-soft); margin-bottom:4px;}
+  .summary-box .stext{font-family:'Noto Serif KR', serif; font-size:16px; font-weight:700;}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="kicker">하위양식 신념 변화 기법</div>
+    <h1>Submodalities Belief Change</h1>
+  </div>
+  <div class="card" id="app"></div>
+</div>
+
+<script>
+const RATE_MIN = 0, RATE_MAX = 10, RATE_DEFAULT = 5;
+
+const SUBMODALITIES = {
+  V: {label:'V 시각', color:'var(--v)', hex:'#C0684F', items:[
+    '연합/분리','틀/전경','컬러/흑백','명/암','전체 크기','핵심 장면 크기','위치와 거리',
+    '입체/평면','컬러의 강도','정지/동영상','장면의 수','움직임 속도 (빠름/느림)','초점 (전체/일부)','보는 각도','기타'
+  ]},
+  A: {label:'A 청각', color:'var(--a)', hex:'#3E7C74', items:[
+    '소리의 크기','리듬','빠르기','고저','음색','소리의 특색','방향','내부/외부','위치','기타'
+  ]},
+  K: {label:'K 신체감각', color:'var(--k)', hex:'#C79A3E', items:[
+    '내부/외부','위치','체온','움직임','강도','지속 정도','크기','형태','무게','기타'
+  ]},
+};
+
+const STEPS = [
+  {key:'belief1', kind:'belief',
+   title:'1) 제한적 신념 확인하기 ("맞아, 그래!")',
+   prompt:'당신에게는 제한적 신념이 있습니까? 있다면 그것은 어떤 것입니까?',
+   placeholder:'예: 나는 무능한 사람이다.',
+   note:'그 신념을 생각할 때 마음속에 영상이나 이미지가 떠오르는지 살펴보세요. "맞아, 그래!"와 같은 느낌의 이미지가 떠올라야 합니다.'},
+  {key:'oldFact', kind:'belief',
+   title:'2) 더 이상 사실이 아닌 옛 사실 확인하기 ("말도 안돼!")',
+   prompt:'과거 한때는 옳았거나 사실이었지만, 지금은 더 이상 타당하지 않은 것이 있습니까?',
+   placeholder:'예: 나는 애연가다. (담배를 끊은 지금은 더 이상 사실이 아님)',
+   note:'그 옛 사실을 생각할 때 어떤 이미지나 느낌이 떠오르는지 주목하세요. 지금은 사실이 아니므로 "말도 안돼!"라는 느낌이 되어야 합니다.'},
+  {key:'test1', kind:'compare', compareA:'belief1', compareB:'oldFact',
+   title:'3) 하위 양식 바꾸기와 테스트',
+   instruction:'1번 신념의 하위양식(특히 결정적 요인)을, 방금 적은 2번 "옛 사실"의 하위양식으로 상상 속에서 바꿔보세요.',
+   reflect:['이제 그 옛 사실(원래 신념)에 대해서 어떻게 생각합니까?','그 신념이 여전히 타당하게 느껴집니까?']},
+  {key:'universal', kind:'belief',
+   title:'4) 절대적 사실에 관한 신념 확인 ("당연하지!")',
+   prompt:'당신은 지금 절대적으로 사실적인 신념을 생각할 수 있습니까? (예: "내일도 태양은 떠오를 것이다", "인간은 언젠가 죽는다")',
+   placeholder:'예: 내일도 태양은 떠오를 것이다.',
+   note:'그 신념을 생각할 때 마음속에 어떤 영상이나 이미지가 떠오르는지 살펴보세요. "당연하지!"와 같은 이미지가 떠올라야 합니다.'},
+  {key:'newBelief', kind:'belief',
+   title:'5) 새로운 활성 신념 갖기',
+   prompt:'1번 신념과는 반대되는, 당신이 갖고 싶은 긍정적 신념은 무엇입니까?',
+   placeholder:'예: 나는 유능한 사람이다.',
+   note:'그 신념을 생각할 때 마음속에 영상이 떠오르는지 확인하세요.'},
+  {key:'test2', kind:'compare', compareA:'universal', compareB:'newBelief',
+   title:'6) 하위 양식 바꾸기와 테스트',
+   instruction:'5번 새로운 신념의 하위양식을, 4번 "절대적 사실"의 하위양식으로 바꾸어라. 이때 어떤 변화가 있었는지 테스트해 보세요.',
+   reflect:['새로운 신념에 대해서 어떻게 생각합니까?','새로운 신념이 사실 같이 느껴집니까?','원래의 제한적 신념이 아직도 유효하거나 여전히 당신에게 적용됩니까?']},
+];
+
+let current = 0;
+const answers = {}; // { key: { text:'', sub:{V:[...], A:[...], K:[...]}, reflect:[...] } }
+STEPS.forEach(s => {
+  if(s.kind === 'belief'){
+    answers[s.key] = {text:'', sub:{
+      V: Array(SUBMODALITIES.V.items.length).fill(RATE_DEFAULT),
+      A: Array(SUBMODALITIES.A.items.length).fill(RATE_DEFAULT),
+      K: Array(SUBMODALITIES.K.items.length).fill(RATE_DEFAULT),
+    }, touched:{V:false, A:false, K:false}};
+  } else {
+    answers[s.key] = {reflect: (s.reflect || []).map(() => '')};
+  }
+});
+
+const app = document.getElementById('app');
+
+function render(){
+  app.innerHTML = '';
+  const total = STEPS.length + 1; // +1 for summary
+  const progressHTML = document.createElement('div');
+  progressHTML.innerHTML = `
+    <div class="progress-row">
+      <span>${current < STEPS.length ? `단계 ${current+1} / ${STEPS.length}` : '완료'}</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${(current/total)*100}%"></div></div>
+  `;
+  app.appendChild(progressHTML);
+
+  if(current >= STEPS.length){
+    renderSummary();
+    return;
+  }
+
+  const step = STEPS[current];
+  if(step.kind === 'belief') renderBeliefStep(step);
+  else renderCompareStep(step);
+}
+
+function renderBeliefStep(step){
+  const state = answers[step.key];
+  const box = document.createElement('div');
+
+  box.innerHTML = `
+    <h2 class="step-title">${step.title}</h2>
+    <p class="prompt">${step.prompt}</p>
+    <textarea id="belief-text" placeholder="${step.placeholder}">${state.text}</textarea>
+    <p class="note">${step.note}</p>
+    <div class="checklist-toggle">아래는 선택사항입니다. 신념을 떠올렸을 때의 느낌을 더 구체적으로 기록하고 싶다면 항목을 열어 0~10점으로 평가해보세요 (0=가장 약함, 10=가장 강함).</div>
+    <div id="checklist-groups"></div>
+    <div class="btn-row">
+      ${current > 0 ? '<button class="btn btn-ghost" id="prev-btn">이전</button>' : ''}
+      <button class="btn" id="next-btn">다음</button>
+    </div>
+  `;
+  app.appendChild(box);
+
+  const groupsWrap = document.getElementById('checklist-groups');
+  ['V','A','K'].forEach(cat => {
+    groupsWrap.appendChild(buildGroup(cat, step.key));
+  });
+
+  document.getElementById('belief-text').addEventListener('input', e => {
+    state.text = e.target.value;
+    document.getElementById('next-btn').disabled = !state.text.trim();
+  });
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = !state.text.trim();
+  nextBtn.addEventListener('click', () => { current++; render(); });
+
+  const prevBtn = document.getElementById('prev-btn');
+  if(prevBtn) prevBtn.addEventListener('click', () => { current--; render(); });
+}
+
+function buildGroup(cat, stepKey){
+  const meta = SUBMODALITIES[cat];
+  const state = answers[stepKey];
+  const details = document.createElement('details');
+  details.className = 'group';
+  details.innerHTML = `<summary style="border-left:4px solid ${meta.hex}; padding-left:10px;">${meta.label}</summary><div class="group-body" id="body-${stepKey}-${cat}"></div>`;
+  const body = details.querySelector('.group-body');
+  meta.items.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'slider-row';
+    const val = state.sub[cat][idx];
+    row.innerHTML = `
+      <div class="slabel"><span>${item}</span><span class="sval">${val}</span></div>
+      <input type="range" min="${RATE_MIN}" max="${RATE_MAX}" step="1" value="${val}">
+    `;
+    const input = row.querySelector('input');
+    const valSpan = row.querySelector('.sval');
+    input.addEventListener('input', e => {
+      const v = parseInt(e.target.value, 10);
+      state.sub[cat][idx] = v;
+      state.touched[cat] = true;
+      valSpan.textContent = v;
+    });
+    body.appendChild(row);
+  });
+  return details;
+}
+
+function renderCompareStep(step){
+  const box = document.createElement('div');
+  box.innerHTML = `
+    <h2 class="step-title">${step.title}</h2>
+    <p class="instruction">${step.instruction}</p>
+  `;
+  app.appendChild(box);
+
+  const a = answers[step.compareA];
+  const b = answers[step.compareB];
+  const anyTouched = ['V','A','K'].some(c => a.touched[c] || b.touched[c]);
+
+  if(anyTouched){
+    const cmpWrap = document.createElement('div');
+    ['V','A','K'].forEach(cat => {
+      if(!a.touched[cat] && !b.touched[cat]) return;
+      const meta = SUBMODALITIES[cat];
+      const details = document.createElement('details');
+      details.className = 'group';
+      details.innerHTML = `<summary style="border-left:4px solid ${meta.hex}; padding-left:10px;">${meta.label} 비교</summary><div class="group-body"></div>`;
+      const body = details.querySelector('.group-body');
+      meta.items.forEach((item, idx) => {
+        const va = a.sub[cat][idx], vb = b.sub[cat][idx];
+        const row = document.createElement('div');
+        row.className = 'compare-row';
+        row.innerHTML = `
+          <div class="clabel">${item}</div>
+          <div class="cbar-wrap"><span class="cbar-tag">A</span><div class="cbar-track"><div class="cbar-fill" style="width:${va*10}%; background:${meta.hex}"></div></div><span class="cbar-num">${va}</span></div>
+          <div class="cbar-wrap"><span class="cbar-tag">B</span><div class="cbar-track"><div class="cbar-fill" style="width:${vb*10}%; background:var(--ink-soft)"></div></div><span class="cbar-num">${vb}</span></div>
+        `;
+        body.appendChild(row);
+      });
+      cmpWrap.appendChild(details);
+    });
+    app.appendChild(cmpWrap);
+  } else {
+    const msg = document.createElement('p');
+    msg.className = 'note';
+    msg.textContent = '두 신념 모두 체크리스트를 작성하지 않았습니다. 이전 단계로 돌아가 체크리스트를 채우면 여기서 두 신념의 하위양식 차이를 비교해 볼 수 있어요.';
+    app.appendChild(msg);
+  }
+
+  const reflectWrap = document.createElement('div');
+  reflectWrap.style.marginTop = '18px';
+  (step.reflect || []).forEach((q, i) => {
+    const p = document.createElement('p');
+    p.className = 'prompt';
+    p.textContent = q;
+    reflectWrap.appendChild(p);
+    const ta = document.createElement('textarea');
+    ta.placeholder = '(선택사항) 느낀 점을 적어보세요';
+    ta.value = answers[step.key].reflect[i] || '';
+    ta.addEventListener('input', e => { answers[step.key].reflect[i] = e.target.value; });
+    reflectWrap.appendChild(ta);
+  });
+  app.appendChild(reflectWrap);
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'btn-row';
+  btnRow.innerHTML = `<button class="btn btn-ghost" id="prev-btn">이전</button><button class="btn" id="next-btn">다음</button>`;
+  app.appendChild(btnRow);
+  document.getElementById('prev-btn').addEventListener('click', () => { current--; render(); });
+  document.getElementById('next-btn').addEventListener('click', () => { current++; render(); });
+}
+
+function renderSummary(){
+  const box = document.createElement('div');
+  box.innerHTML = `<h2 class="step-title">완료 — 신념 변화 요약</h2>`;
+  app.appendChild(box);
+
+  const before = document.createElement('div');
+  before.className = 'summary-box';
+  before.style.borderLeftColor = '#C0684F';
+  before.innerHTML = `<div class="slabel2">이전 (제한적 신념)</div><div class="stext">${escapeHtml(answers.belief1.text)}</div>`;
+  app.appendChild(before);
+
+  const after = document.createElement('div');
+  after.className = 'summary-box';
+  after.style.borderLeftColor = '#3E7C74';
+  after.innerHTML = `<div class="slabel2">이후 (새로운 활성 신념)</div><div class="stext">${escapeHtml(answers.newBelief.text)}</div>`;
+  app.appendChild(after);
+
+  const universalBox = document.createElement('div');
+  universalBox.className = 'summary-box';
+  universalBox.style.borderLeftColor = '#4B5A78';
+  universalBox.innerHTML = `<div class="slabel2">활용한 절대적 사실 (기준 하위양식)</div><div class="stext">${escapeHtml(answers.universal.text)}</div>`;
+  app.appendChild(universalBox);
+
+  const test2 = answers.test2.reflect;
+  if(test2 && test2.some(t => t && t.trim())){
+    const reflectBox = document.createElement('div');
+    reflectBox.style.marginTop = '10px';
+    reflectBox.innerHTML = `<p class="note" style="font-style:normal; margin-bottom:8px;">마지막 단계에서 남긴 소감:</p>`;
+    test2.forEach(t => {
+      if(t && t.trim()){
+        const p = document.createElement('p');
+        p.className = 'prompt';
+        p.style.fontSize = '14px';
+        p.textContent = '· ' + t;
+        reflectBox.appendChild(p);
+      }
+    });
+    app.appendChild(reflectBox);
+  }
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'btn-row';
+  btnRow.innerHTML = `<button class="btn btn-ghost" id="restart-btn">처음부터 다시 하기</button>`;
+  app.appendChild(btnRow);
+  document.getElementById('restart-btn').addEventListener('click', () => {
+    current = 0;
+    STEPS.forEach(s => {
+      if(s.kind === 'belief'){
+        answers[s.key].text = '';
+        answers[s.key].touched = {V:false, A:false, K:false};
+        ['V','A','K'].forEach(c => answers[s.key].sub[c].fill(RATE_DEFAULT));
+      } else {
+        answers[s.key].reflect = (s.reflect || []).map(() => '');
+      }
+    });
+    render();
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+render();
+</script>
+</body>
+</html>
